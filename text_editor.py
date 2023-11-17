@@ -48,7 +48,8 @@ def update_counts(event=None):
     text = txt_edit.get("1.0", tk.END)
     lines = text.count('\n')  # Counting '\n' to find lines
     words = len(text.split())  # Splitting text to count words
-    characters = len(text) - text.count('\n')  # Excluding newline characters
+    # Count characters by counting all characters except '\n' and ' '
+    characters = len(text) - text.count('\n') - text.count(' ') + 1
 
     lbl_line_count.config(text=f"Lines: {lines}")
     lbl_word_count.config(text=f"Words: {words}")

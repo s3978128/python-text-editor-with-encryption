@@ -20,7 +20,7 @@ A simple text editor application developed using Python's Tkinter library.
 2. Install the required Python packages if needed (`tkinter`).
 
 ### Running the Application
-1. Open the terminal or command prompt.
+1. Open the terminal.
 2. Navigate to the directory where the `text_editor.py` file is located.
 3. Run the following command:
     ```
