@@ -1,6 +1,6 @@
 # Secure Text Editor
 
-The Secure Text Editor is an application built using Python's Tkinter library, offering encryption functionalities for text files using `pyDes` and `pycryptodome`.
+The Secure Text Editor is an application built using Python's `tkinter` library, offering encryption functionalities for text files using `pyDes` and `pycryptodome`.
 
 ## Features:
 
