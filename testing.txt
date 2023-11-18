@@ -1,0 +1,1 @@
+To handle longer messages, you'd typically use RSA to encrypt a symmetric key (like AES) and use that symmetric key to encrypt the longer message.
