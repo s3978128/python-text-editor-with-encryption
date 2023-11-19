@@ -32,9 +32,9 @@ The Secure Text Editor is an application built using Python's `tkinter` library,
     ```
     python text_editor.py
     ```
-4. The application window will appear, enabling you to perform text editing operations with encryption capabilities (DES or RSA encryption available). You can start by encrypting the provided `testingtext.txt` file, or create a new file.
-5. To use the DES encryption, you need to input a non-empty password. Note that due to limitations, passwords longer than 8 characters will be truncated.
-6. To use the RSA encryption, a pair of public and private keys is needed. Use the Generate Key button to generate the keys. You can then start using this encryption method.
+4. The application window will appear, enabling you to perform text editing operations with encryption capabilities (DES or RSA encryption available). You can start by encrypting the provided `testing.txt` file, or create a new file.
+5. To use the DES encryption, you need to input a non-empty password.
+6. To use the RSA encryption, a pair of public and private keys is needed. Use the Generate Key button to generate the keys. You can then start using this encryption method. Note that RSA encryption cannot be used on texts that are too long.
 
 ## Information:
 - **Author:** Nguyen Viet Ha (s3978128)
