@@ -153,6 +153,9 @@ def decrypt_file_des(filepath, password):
         print(f"Decrypted data: {decrypted_data}")
         
         return decrypted_filepath
+    except UnicodeDecodeError:
+        # Handle UnicodeDecodeError when the password is incorrect
+        messagebox.showerror("Error", "Decryption failed: Incorrect password!")
     except Exception as e:
         messagebox.showerror("Error", f"Decryption failed: {e}")
 
