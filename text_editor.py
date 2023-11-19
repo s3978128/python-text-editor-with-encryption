@@ -1,13 +1,18 @@
 import tkinter as tk
 from tkinter import messagebox, scrolledtext, Menu, filedialog, simpledialog
-import pyDes
-from Crypto.Cipher import PKCS1_OAEP
-from Crypto.PublicKey import RSA
-from Crypto.Random import get_random_bytes
-from Crypto import Random
-from Crypto.Hash import SHA256
 
-# Text editor functions
+# pyDes library for DES encryption and decryption
+import pyDes # DES algorithm
+from hashlib import sha256 # Use SHA256 hashing algorithm
+
+# pycryptodome library for RSA encryption and decryption
+from Crypto.Cipher import PKCS1_OAEP # Use PKCS1_OAEP padding scheme
+from Crypto.PublicKey import RSA # RSA algorithm
+from Crypto import Random # Random number generator
+from Crypto.Random import get_random_bytes # Random bytes generator
+from Crypto.Hash import SHA256 # SHA256 hashing algorithm
+
+## Text editor functions
 def open_file():
     """Open a file for editing."""
     filepath = tk.filedialog.askopenfilename(
@@ -37,7 +42,7 @@ def save_file():
 
 def about_info():
     """Display information about the application."""
-    messagebox.showinfo("About", "A Simple Text Editor with Encryption Algorithms!\nNguyen Viet Ha s3978128\nSecurity for Computing and IT\nEncrypt your .txt files using symmetric (DES) or asymmetric (RSA) encryption algorithms.")
+    messagebox.showinfo("About", "A Simple Text Editor with Encryption Algorithms!\nNguyen Viet Ha s3978128\nSecurity for Computing and IT\nEncrypt your .txt files using simplified symmetric (DES) or asymmetric (RSA) encryption algorithms.")
 
 def clear_text():
     """Clear the text editor."""
@@ -73,38 +78,50 @@ def display_decrypted_content(filepath):
         txt_edit.insert(tk.END, text)
     window.title(f"Text Editor - {filepath}")
 
+## DES encryption and decryption functions
+def pad_password(password):
+    """
+    Pad the password to fit the 8-byte DES key requirement.
+    Use a hashing algorithm to generate a fixed-size key.
+    """
+    # Generate a fixed-size key, using SHA256 hashing algorithm
+    hashed_password = sha256(password.encode('utf-8')).digest()  
+    return hashed_password[:8]  # Use the first 8 bytes as the key
 
-# DES encryption and decryption functions
 def encrypt_file_des(filepath, password):
     """ 
     Encrypt a file using DES algorithm.
     Return the encrypted file path if successful.
     """
     try:
+        # Read the file to be encrypted
         with open(filepath, 'rb') as file:
             data = file.read()
             
-        # Pad or truncate the password to fit the 8-byte DES key requirement
-        # NOTES: THIS MEANS ANY PASSWORD LONGER THAN 8 BYTES WILL BE TRUNCATED!
-        padded_password = (password + '\0' * 7)[:8].encode('utf-8')
+        # Generate a key using the password
+        key = pad_password(password)
         
-        # Pad the data to be a multiple of 8 bytes (DES block size), CBC, PKCS5 padding, no padding mode
-        k = pyDes.des(padded_password, pyDes.CBC, b"\0\0\0\0\0\0\0\0", pad=None, padmode=pyDes.PAD_PKCS5)
+        # Initialize DES object with CBC mode and PKCS5 padding
+        # Mode and padding scheme must be the same for encryption and decryption
+        # OpenSSL allows more modes and padding schemes
+        k = pyDes.des(key, pyDes.CBC, b"\0\0\0\0\0\0\0\0", pad=None, padmode=pyDes.PAD_PKCS5)
         
         # Encrypt the data using DES algorithm
         encrypted_data = k.encrypt(data)
         
-        # Remove ".txt" and add "-encrypted.txt"
-        encrypted_filepath = filepath[:-4]
-        encrypted_filepath = encrypted_filepath + "-des-encrypted.txt"  # Change the file extension
+        # Create a new file path for the encrypted file
+        encrypted_filepath = filepath[:-4] + "-des-encrypted.txt"  # Change the file extension
         
-        # Write the encrypted data to the file
+        # Write the encrypted data to a new file
         with open(encrypted_filepath, 'wb') as file:
             file.write(encrypted_data)
         
+        # Write encrypted data to console
+        print(f"Encrypted data: {encrypted_data}")
+        
         return encrypted_filepath
     except Exception as e:
-        messagebox.showerror("Error", f"Encryption failed. Possible error: {e}")
+        messagebox.showerror("Error", f"Encryption failed: {e}")
 
 def decrypt_file_des(filepath, password):
     """
@@ -112,27 +129,32 @@ def decrypt_file_des(filepath, password):
     Return the decrypted file path if successful.
     """
     try:
+        # Read the file to be decrypted
         with open(filepath, 'rb') as file:
             encrypted_data = file.read()
         
-        # Pad or truncate the password to fit the 8-byte DES key requirement
-        padded_password = (password + '\0' * 7)[:8].encode('utf-8')
+        # Generate a key using the password
+        key = pad_password(password)
         
-        # Pad the data to be a multiple of 8 bytes (DES block size), CBC, PKCS5 padding, no padding mode
-        k = pyDes.des(padded_password, pyDes.CBC, b"\0\0\0\0\0\0\0\0", pad=None, padmode=pyDes.PAD_PKCS5)
+        # Initialize DES object with CBC mode and PKCS5 padding
+        k = pyDes.des(key, pyDes.CBC, b"\0\0\0\0\0\0\0\0", pad=None, padmode=pyDes.PAD_PKCS5)
+        
+        # Decrypt the data using DES algorithm
         decrypted_data = k.decrypt(encrypted_data)
         
-        # Remove ".txt" and add "-decrypted.txt"
-        decrypted_filepath = filepath[:-4]
-        decrypted_filepath = decrypted_filepath + "-des-decrypted.txt"
+        # Create a new file path for the decrypted file
+        decrypted_filepath = filepath[:-4] + "-des-decrypted.txt"
         
-        # Write the decrypted data to the file
+        # Write the decrypted data to a new file
         with open(decrypted_filepath, 'wb') as file:
             file.write(decrypted_data)
         
+        # Write decrypted data to console
+        print(f"Decrypted data: {decrypted_data}")
+        
         return decrypted_filepath
     except Exception as e:
-        messagebox.showerror("Error", f"Decryption failed, check your password!")
+        messagebox.showerror("Error", f"Decryption failed: {e}")
 
 # Encryption and decryption functions called by the buttons
 def encrypt_file_des_with_password():
@@ -167,6 +189,7 @@ def encrypt_file_des_with_password():
 def decrypt_file_des_with_password():
     """ 
     Decrypt a file using DES algorithm when the user clicks the "Decrypt File" button.
+    Opens the decrypted file in the text editor.
     """
     # Ask user to select a file to decrypt
     filepath = tk.filedialog.askopenfilename(
@@ -194,7 +217,7 @@ def decrypt_file_des_with_password():
         messagebox.showinfo("Decryption Complete", f"File decrypted as {decrypted_filepath}")
         display_decrypted_content(decrypted_filepath)  # Display decrypted content in text editor
 
-# RSA encryption and decryption functions
+## RSA encryption and decryption functions
 # File paths for saving keys
 PUBLIC_KEY_FILE = "public_key.pem"
 PRIVATE_KEY_FILE = "private_key.pem"
@@ -206,8 +229,11 @@ def generate_keys_and_save(keysize=2048):
     Default key size is 2048 bits.
     """
     try:
+        # Generate RSA key pair
         random_generator = Random.new().read
         key = RSA.generate(keysize, random_generator)
+        
+        # Export public and private keys to strings
         public_key = key.publickey().export_key()
         private_key = key.export_key()
         
@@ -218,9 +244,17 @@ def generate_keys_and_save(keysize=2048):
         # Save private key to file
         with open(PRIVATE_KEY_FILE, 'wb') as priv_key_file:
             priv_key_file.write(private_key)
-            messagebox.showinfo("Key Generation Complete", f"Public and private keys saved to {PUBLIC_KEY_FILE} and {PRIVATE_KEY_FILE}")
+            
+        # Show a message box when key generation and saving is successful
+        messagebox.showinfo("Key Generation Complete", f"Public key saved as {PUBLIC_KEY_FILE}\nPrivate key saved as {PRIVATE_KEY_FILE}")
+        
+        # Show the keys in the console
+        print(f"Public key: {public_key}")
+        print(f"Private key: {private_key}")
+        
         return public_key, private_key
     except Exception as e:
+        # Handle key generation and saving errors
         messagebox.showerror("Error", f"Key generation and saving failed: {e}")
 
 # Function to load existing RSA keys from files
@@ -229,6 +263,7 @@ def load_keys():
     Load RSA keys from saved files.
     """
     try:
+        # Load public and private keys from files
         with open(PUBLIC_KEY_FILE, 'rb') as pub_key_file:
             public_key = pub_key_file.read()
         
@@ -237,29 +272,42 @@ def load_keys():
         
         return public_key, private_key
     except FileNotFoundError:
+        # Show a warning if keys are not found
         messagebox.showwarning("Warning", "Keys not found. Please generate new keys.")
         return None, None
     except Exception as e:
+        # Handle key loading errors
         messagebox.showerror("Error", f"Key loading failed: {e}")
 
+# RSA encryption and decryption functions
 def encrypt_file_rsa(filepath, public_key):
     """ 
     Encrypt a file using RSA public key.
     Return the encrypted file path if successful.
     """
     try:
+        # Read file to be encrypted
         with open(filepath, 'rb') as file:
             data = file.read()
         
+        # Import recipient's public key and create cipher
         recipient_key = RSA.import_key(public_key)
-        cipher_rsa = PKCS1_OAEP.new(recipient_key)
-        encrypted_data = cipher_rsa.encrypt(data)
+        cipher_rsa = PKCS1_OAEP.new(recipient_key) # Use PKCS1_OAEP padding scheme
         
-        encrypted_filepath = filepath[:-4] + "-rsa-encrypted.txt"
+        # Encrypt data
+        encrypted_data = cipher_rsa.encrypt(data) # RSA encryption is slow for large data
+        
+        # Save encrypted data to a new file
+        encrypted_filepath = filepath[:-4] + "-rsa-encrypted.txt" # Change the file extension
         with open(encrypted_filepath, 'wb') as file:
             file.write(encrypted_data)
+            
+        # Write encrypted data to console
+        print(f"Encrypted data: {encrypted_data}")
+        
         return encrypted_filepath
     except Exception as e:
+        # Handle encryption errors
         messagebox.showerror("Encryption Failed", f"Error: {e}")
 
 def decrypt_file_rsa(filepath, private_key):
@@ -268,20 +316,30 @@ def decrypt_file_rsa(filepath, private_key):
     Return the decrypted file path if successful.
     """
     try:
+        # Read encrypted data from file
         with open(filepath, 'rb') as file:
             encrypted_data = file.read()
         
-        key = RSA.import_key(private_key)
-        cipher_rsa = PKCS1_OAEP.new(key)
-        decrypted_data = cipher_rsa.decrypt(encrypted_data)
+        # Import private key and create cipher
+        key = RSA.import_key(private_key) # Import private key
+        cipher_rsa = PKCS1_OAEP.new(key) # Use PKCS1_OAEP padding scheme
         
-        decrypted_filepath = filepath[:-4] + "-rsa-decrypted.txt"
+        # Decrypt data
+        decrypted_data = cipher_rsa.decrypt(encrypted_data) # RSA decryption is slow for large data
+        
+        # Save decrypted data to a new file
+        decrypted_filepath = filepath[:-4] + "-rsa-decrypted.txt" # Change the file extension
         with open(decrypted_filepath, 'wb') as file:
             file.write(decrypted_data)
+            
+        # Write decrypted data to console
+        print(f"Decrypted data: {decrypted_data}")
+        
         return decrypted_filepath
     except Exception as e:
+        # Handle decryption errors
         messagebox.showerror("Decryption Failed", f"Error: {e}")
-        
+
 # Encryption and decryption functions called by the buttons
 def encrypt_file_rsa_with_loaded_key():
     """
@@ -295,7 +353,7 @@ def encrypt_file_rsa_with_loaded_key():
     if public_key is None:
         return
 
-    encrypted_filepath = encrypt_file_rsa(filepath, public_key)
+    encrypted_filepath = encrypt_file_rsa(filepath, public_key) # Encrypt the file using RSA public key
     if encrypted_filepath:
         messagebox.showinfo("Encryption Complete", f"File encrypted as {encrypted_filepath}")
 
@@ -311,15 +369,16 @@ def decrypt_file_rsa_with_loaded_key():
     if private_key is None:
         return
     
-    decrypted_filepath = decrypt_file_rsa(filepath, private_key)
+    decrypted_filepath = decrypt_file_rsa(filepath, private_key) # Decrypt the file using RSA private key
     if decrypted_filepath:
         display_decrypted_content(decrypted_filepath)  # Display decrypted content in text editor
         messagebox.showinfo("Decryption Complete", f"File decrypted as {decrypted_filepath}")
 
 
+## Main program
 # Create the main window
 window = tk.Tk()
-window.title("Text Editor")
+window.title("Text Editor with Encryption Algorithms")
 
 # Set window size and layout
 window.geometry("980x580")  # Set window size

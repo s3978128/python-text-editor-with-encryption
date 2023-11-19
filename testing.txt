@@ -1,1 +1,1 @@
-To handle longer messages, you'd typically use RSA to encrypt a symmetric key (like AES) and use that symmetric key to encrypt the longer message.
+Lack of originality, everywhere, all over the world, from time immemorial, has always been considered the foremost quality and the recommendation of the active, efficient and practical man.
