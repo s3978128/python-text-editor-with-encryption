@@ -67,7 +67,7 @@ def update_counts(event=None):
     lbl_word_count.config(text=f"Words: {words}")
     lbl_char_count.config(text=f"Characters: {characters}")
 
-# Helper display function
+# Helper display function, opens the decrypted files after decryption
 def display_decrypted_content(filepath):
     """ 
     Display decrypted content in text editor when decryption is complete.
@@ -85,7 +85,37 @@ def display_decrypted_content(filepath):
         # Handle other errors
         messagebox.showerror("Error", f"Decryption failed: {e}")
 
-## DES encryption and decryption functions
+# Encryption function called by the button
+def encrypt_file_des_with_password():
+    """ 
+    Encrypt a file using DES algorithm when the user clicks the "Encrypt File" button.
+    """
+    # Ask user to select a file to encrypt
+    filepath = tk.filedialog.askopenfilename(
+        filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
+    )
+    if not filepath:
+        return
+
+    # Ask user to enter a password for encryption
+    password = tk.simpledialog.askstring("Password", "Enter password for encryption:", show='*')
+    if password is None:
+        # User pressed the "Cancel" button
+        return
+
+    # If the password is empty
+    if not password:
+        messagebox.showerror("Error", "Password must not be empty!")
+        return
+
+    # Encrypt the file using DES algorithm calling the encrypt_file_des function
+    encrypted_filepath = encrypt_file_des(filepath, password)
+    
+    # If the encryption is successful
+    if encrypted_filepath:
+        messagebox.showinfo("Encryption Complete", f"File encrypted as {encrypted_filepath}")
+
+## Pad password to fit DES key requirement
 def pad_password(password):
     """
     Pad the password to fit the 8-byte DES key requirement.
@@ -95,6 +125,7 @@ def pad_password(password):
     hashed_password = sha256(password.encode('utf-8')).digest()  
     return hashed_password[:8]  # Use the first 8 bytes as the key
 
+# DES encryption function
 def encrypt_file_des(filepath, password):
     """ 
     Encrypt a file using DES algorithm.
@@ -130,6 +161,39 @@ def encrypt_file_des(filepath, password):
     except Exception as e:
         messagebox.showerror("Error", f"Encryption failed: {e}")
 
+# Decryption function called by the button
+def decrypt_file_des_with_password():
+    """ 
+    Decrypt a file using DES algorithm when the user clicks the "Decrypt File" button.
+    Opens the decrypted file in the text editor.
+    """
+    # Ask user to select a file to decrypt
+    filepath = tk.filedialog.askopenfilename(
+        filetypes=[("Encrypted Files", "*.txt"), ("All Files", "*.*")]
+    )
+    if not filepath:
+        return
+
+    # Ask user to enter a password for decryption
+    password = tk.simpledialog.askstring("Password", "Enter password for decryption:", show='*')
+    if password is None:
+        # User pressed the "Cancel" button
+        return
+
+    # If the password is empty
+    if not password:
+        messagebox.showerror("Error", "Password must not be empty!")
+        return
+
+    # Decrypt the file using DES algorithm calling the decrypt_file_des function
+    decrypted_filepath = decrypt_file_des(filepath, password)
+    
+    # If the decryption is successful
+    if decrypted_filepath:
+        messagebox.showinfo("Decryption Complete", f"File decrypted as {decrypted_filepath}")
+        display_decrypted_content(decrypted_filepath)  # Display decrypted content in text editor
+
+# DES decryption function
 def decrypt_file_des(filepath, password):
     """
     Decrypt a file using DES algorithm. 
@@ -162,67 +226,6 @@ def decrypt_file_des(filepath, password):
         return decrypted_filepath
     except Exception as e:
         messagebox.showerror("Error", f"Decryption failed: {e}")
-
-# Encryption and decryption functions called by the buttons
-def encrypt_file_des_with_password():
-    """ 
-    Encrypt a file using DES algorithm when the user clicks the "Encrypt File" button.
-    """
-    # Ask user to select a file to encrypt
-    filepath = tk.filedialog.askopenfilename(
-        filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]
-    )
-    if not filepath:
-        return
-
-    # Ask user to enter a password for encryption
-    password = tk.simpledialog.askstring("Password", "Enter password for encryption:", show='*')
-    if password is None:
-        # User pressed the "Cancel" button
-        return
-
-    # If the password is empty
-    if not password:
-        messagebox.showerror("Error", "Password must not be empty!")
-        return
-
-    # Encrypt the file using DES algorithm calling the encrypt_file_des function
-    encrypted_filepath = encrypt_file_des(filepath, password)
-    
-    # If the encryption is successful
-    if encrypted_filepath:
-        messagebox.showinfo("Encryption Complete", f"File encrypted as {encrypted_filepath}")
-
-def decrypt_file_des_with_password():
-    """ 
-    Decrypt a file using DES algorithm when the user clicks the "Decrypt File" button.
-    Opens the decrypted file in the text editor.
-    """
-    # Ask user to select a file to decrypt
-    filepath = tk.filedialog.askopenfilename(
-        filetypes=[("Encrypted Files", "*.txt"), ("All Files", "*.*")]
-    )
-    if not filepath:
-        return
-
-    # Ask user to enter a password for decryption
-    password = tk.simpledialog.askstring("Password", "Enter password for decryption:", show='*')
-    if password is None:
-        # User pressed the "Cancel" button
-        return
-
-    # If the password is empty
-    if not password:
-        messagebox.showerror("Error", "Password must not be empty!")
-        return
-
-    # Decrypt the file using DES algorithm calling the decrypt_file_des function
-    decrypted_filepath = decrypt_file_des(filepath, password)
-    
-    # If the decryption is successful
-    if decrypted_filepath:
-        messagebox.showinfo("Decryption Complete", f"File decrypted as {decrypted_filepath}")
-        display_decrypted_content(decrypted_filepath)  # Display decrypted content in text editor
 
 ## RSA encryption and decryption functions
 # File paths for saving keys
@@ -286,7 +289,24 @@ def load_keys():
         # Handle key loading errors
         messagebox.showerror("Error", f"Key loading failed: {e}")
 
-# RSA encryption and decryption functions
+# Encryption function called by the button
+def encrypt_file_rsa_with_loaded_key():
+    """
+    Encrypt a file using loaded RSA public key when the user clicks the "Encrypt File (RSA)" button.
+    """
+    filepath = tk.filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+    if not filepath:
+        return
+
+    public_key, _ = load_keys()  # Assuming load_keys() returns the loaded public and private keys
+    if public_key is None:
+        return
+
+    encrypted_filepath = encrypt_file_rsa(filepath, public_key) # Encrypt the file using RSA public key
+    if encrypted_filepath:
+        messagebox.showinfo("Encryption Complete", f"File encrypted as {encrypted_filepath}")
+
+# RSA encryption function
 def encrypt_file_rsa(filepath, public_key):
     """ 
     Encrypt a file using RSA public key.
@@ -317,6 +337,25 @@ def encrypt_file_rsa(filepath, public_key):
         # Handle encryption errors
         messagebox.showerror("Encryption Failed", f"Error: {e}")
 
+# Decryption function called by the button
+def decrypt_file_rsa_with_loaded_key():
+    """ 
+    Decrypt a file using loaded RSA private key when the user clicks the "Decrypt File (RSA)" button.
+    """
+    filepath = tk.filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+    if not filepath:
+        return
+    
+    _, private_key = load_keys()  # Assuming load_keys() returns the loaded public and private keys
+    if private_key is None:
+        return
+    
+    decrypted_filepath = decrypt_file_rsa(filepath, private_key) # Decrypt the file using RSA private key
+    if decrypted_filepath:
+        display_decrypted_content(decrypted_filepath)  # Display decrypted content in text editor
+        messagebox.showinfo("Decryption Complete", f"File decrypted as {decrypted_filepath}")
+
+# RSA decryption function
 def decrypt_file_rsa(filepath, private_key):
     """ 
     Decrypt a file using RSA private key.
@@ -346,41 +385,6 @@ def decrypt_file_rsa(filepath, private_key):
     except Exception as e:
         # Handle decryption errors
         messagebox.showerror("Decryption Failed", f"Error: {e}")
-
-# Encryption and decryption functions called by the buttons
-def encrypt_file_rsa_with_loaded_key():
-    """
-    Encrypt a file using loaded RSA public key when the user clicks the "Encrypt File (RSA)" button.
-    """
-    filepath = tk.filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
-    if not filepath:
-        return
-
-    public_key, _ = load_keys()  # Assuming load_keys() returns the loaded public and private keys
-    if public_key is None:
-        return
-
-    encrypted_filepath = encrypt_file_rsa(filepath, public_key) # Encrypt the file using RSA public key
-    if encrypted_filepath:
-        messagebox.showinfo("Encryption Complete", f"File encrypted as {encrypted_filepath}")
-
-def decrypt_file_rsa_with_loaded_key():
-    """ 
-    Decrypt a file using loaded RSA private key when the user clicks the "Decrypt File (RSA)" button.
-    """
-    filepath = tk.filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
-    if not filepath:
-        return
-    
-    _, private_key = load_keys()  # Assuming load_keys() returns the loaded public and private keys
-    if private_key is None:
-        return
-    
-    decrypted_filepath = decrypt_file_rsa(filepath, private_key) # Decrypt the file using RSA private key
-    if decrypted_filepath:
-        display_decrypted_content(decrypted_filepath)  # Display decrypted content in text editor
-        messagebox.showinfo("Decryption Complete", f"File decrypted as {decrypted_filepath}")
-
 
 ## Main program
 # Create the main window
