@@ -72,11 +72,18 @@ def display_decrypted_content(filepath):
     """ 
     Display decrypted content in text editor when decryption is complete.
     """
-    txt_edit.delete("1.0", tk.END)
-    with open(filepath, mode="r", encoding="utf-8") as input_file:
-        text = input_file.read()
-        txt_edit.insert(tk.END, text)
-    window.title(f"Text Editor - {filepath}")
+    try:
+        txt_edit.delete("1.0", tk.END)
+        with open(filepath, mode="r", encoding="utf-8") as input_file:
+            text = input_file.read()
+            txt_edit.insert(tk.END, text)
+        window.title(f"Text Editor - {filepath}")
+    except UnicodeDecodeError:
+        # Handle UnicodeDecodeError when the password is incorrect
+        messagebox.showerror("Error", "Decryption failed: Incorrect password!")
+    except Exception as e:
+        # Handle other errors
+        messagebox.showerror("Error", f"Decryption failed: {e}")
 
 ## DES encryption and decryption functions
 def pad_password(password):
@@ -153,9 +160,6 @@ def decrypt_file_des(filepath, password):
         print(f"Decrypted data: {decrypted_data}")
         
         return decrypted_filepath
-    except UnicodeDecodeError:
-        # Handle UnicodeDecodeError when the password is incorrect
-        messagebox.showerror("Error", "Decryption failed: Incorrect password!")
     except Exception as e:
         messagebox.showerror("Error", f"Decryption failed: {e}")
 
