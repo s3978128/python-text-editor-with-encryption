@@ -382,7 +382,6 @@ window.title("Text Editor with Encryption Algorithms")
 
 # Set window size and layout
 window.geometry("980x580")  # Set window size
-window.resizable(False, False)  # Set resizable to False for both x and y directions
 
 # Create Text widget with scrollbar
 txt_edit = scrolledtext.ScrolledText(window, wrap=tk.WORD, font=("Arial", 12))
